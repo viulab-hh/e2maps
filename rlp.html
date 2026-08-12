@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <title>e2maps | Landtagswahl Rheinland-Pfalz 2026</title>
 
   <style>
@@ -14,10 +15,16 @@
       background: #fff;
     }
 
+    body {
+      overflow: hidden;
+    }
+
     iframe {
       display: block;
       width: 100%;
       height: 780px;
+      margin: 0;
+      padding: 0;
       border: 0;
     }
   </style>
@@ -26,6 +33,7 @@
 <body>
   <iframe
     src="https://observablehq.com/embed/7772c08af24d1bf2@1213?cells=chartRLP"
+    scrolling="no"
   ></iframe>
 </body>
 </html>

@@ -4,64 +4,31 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>e2maps | Landtagswahl Baden-Württemberg 2026</title>
+
   <style>
-    html, body {
+    html,
+    body {
       margin: 0;
       padding: 0;
-      background: #f6f6f6;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-    }
-
-    .wrap {
-      max-width: 100%;
-      margin: 0 auto;
-      padding: 16px;
-      box-sizing: border-box;
-    }
-
-    .card {
-      background: #fff;
-      border-radius: 14px;
-      box-shadow: 0 6px 20px rgba(0,0,0,.08);
+      width: 100%;
+      height: 100%;
       overflow: hidden;
-    }
-
-    .scroller {
-      overflow-x: auto;
-      overflow-y: hidden;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .scroller-inner {
-      min-width: 820px; /* Breite, die deine Grafik mindestens braucht */
+      background: #fff;
     }
 
     iframe {
-      width: 100%;
-      height: 1300px;
-      border: 0;
       display: block;
-    }
-
-    @media (max-width: 480px) {
-      .wrap { padding: 8px; }
-      .card { border-radius: 10px; }
+      width: 100vw;
+      height: 100vh;
+      border: 0;
     }
   </style>
 </head>
+
 <body>
-  <div class="wrap">
-    <div class="card">
-      <div class="scroller">
-        <div class="scroller-inner">
-          <iframe
-            src="https://observablehq.com/embed/0d557595a4f1177a@940?cells=chartCK%2Cviewof+display"
-            loading="lazy"
-            allow="fullscreen"
-          ></iframe>
-        </div>
-      </div>
-    </div>
-  </div>
+  <iframe
+    src="https://observablehq.com/embed/51bd797c146ba0e6@1166?cells=chartCK"
+    allow="fullscreen"
+  ></iframe>
 </body>
 </html>

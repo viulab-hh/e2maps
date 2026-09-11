@@ -1,5 +1,7 @@
 <script>
   import { onMount } from "svelte";
+  import { cubicInOut } from "svelte/easing";
+  import { tweened } from "svelte/motion";
   import { dsvFormat, geoMercator, geoPath } from "d3";
 
   const WIDTH = 800;
@@ -44,12 +46,19 @@
   const cellPadding = 3;
   let tooltip = null;
   let tooltipElement;
+  let legendElement;
+  let hoveredCellId = null;
+  let lensCellId = null;
+  const zoomScale = tweened(1, { duration: 480, easing: cubicInOut });
   let loading = true;
   let error = "";
 
   $: gridWidth = cells.length
     ? (Math.max(...cells.map((cell) => cell.col)) + 1) * (CELL_SIZE + cellPadding)
     : 0;
+  $: overlayCells = lensCellId
+    ? [...cells.filter((cell) => cell.id !== lensCellId), ...cells.filter((cell) => cell.id === lensCellId)]
+    : cells;
 
   function number(value) {
     return Number(value) || 0;
@@ -82,19 +91,40 @@
   }
 
   function positionTooltip() {
-    if (!tooltip || !tooltipElement) return;
+    if (!tooltip || !tooltipElement || !legendElement) return;
     const margin = 20;
+    const legendBounds = legendElement.getBoundingClientRect();
     const { width, height } = tooltipElement.getBoundingClientRect();
-    const left = Math.max(margin, Math.min(tooltip.x - width / 2, window.innerWidth - width - margin));
-    const top = tooltip.y + height + margin < window.innerHeight
-      ? tooltip.y + margin
-      : tooltip.y - height - margin;
+    const left = Math.max(margin, Math.min(legendBounds.left, window.innerWidth - width - margin));
+    const top = Math.max(margin, Math.min(legendBounds.top, window.innerHeight - height - margin));
     tooltipElement.style.left = `${left}px`;
     tooltipElement.style.top = `${top}px`;
   }
 
   function hideTooltip() {
     tooltip = null;
+    hoveredCellId = null;
+    zoomScale.set(1).then(() => {
+      if (!hoveredCellId) lensCellId = null;
+    });
+  }
+
+  function setHoveredCell(cell) {
+    hoveredCellId = cell.id;
+    lensCellId = cell.id;
+    zoomScale.set(1.72);
+  }
+
+  function cellTransform(cell, activeCellId, magnification) {
+    const x = cell.col * (CELL_SIZE + cellPadding);
+    const y = GRID_TOP + cell.row * (CELL_SIZE + cellPadding);
+
+    if (cell.id !== activeCellId) return `translate(${x} ${y})`;
+
+    const scale = magnification;
+    const center = CELL_SIZE / 2;
+
+    return `translate(${x - center * (scale - 1)} ${y - center * (scale - 1)}) scale(${scale})`;
   }
 
   function turnout(cell) {
@@ -161,11 +191,12 @@
             {#each cells as cell}
               <g
                 class:city={cityIds.has(cell.id)}
+                class:active={cell.id === hoveredCellId}
                 class="cell-group"
                 role="img"
                 aria-label={`Wahlkreis ${cell.Name}`}
-                transform={`translate(${cell.col * (CELL_SIZE + cellPadding)} ${GRID_TOP + cell.row * (CELL_SIZE + cellPadding)})`}
-                on:mouseenter={(event) => showTooltip(cell, event)}
+                transform={cellTransform(cell, lensCellId, $zoomScale)}
+                on:mouseenter={(event) => { setHoveredCell(cell); showTooltip(cell, event); }}
                 on:mousemove={moveTooltip}
                 on:mouseleave={hideTooltip}
               >
@@ -175,11 +206,36 @@
             {/each}
           </g>
 
+          <g class="active-cell-overlay-layer" aria-hidden="true">
+            {#each overlayCells as cell (cell.id)}
+              <g class:city={cityIds.has(cell.id)} class:active={cell.id === hoveredCellId} class="cell-group active-cell-overlay" transform={cellTransform(cell, lensCellId, $zoomScale)}>
+                <rect class="cell" width={CELL_SIZE} height={CELL_SIZE} rx="4" fill={`url(#pattern-${cell.id})`} />
+                <text x={LABEL_PADDING_LEFT} y={LABEL_SIZE / 2} dominant-baseline="central">{cell.id}</text>
+              </g>
+            {/each}
+          </g>
+
+          <g class="cell-hit-areas">
+            {#each cells as cell}
+              <g
+                class="cell-hit-group"
+                role="img"
+                aria-label={`Wahlkreis ${cell.Name}`}
+                transform={`translate(${cell.col * (CELL_SIZE + cellPadding)} ${GRID_TOP + cell.row * (CELL_SIZE + cellPadding)})`}
+                on:mouseenter={(event) => { setHoveredCell(cell); showTooltip(cell, event); }}
+                on:mousemove={moveTooltip}
+                on:mouseleave={hideTooltip}
+              >
+                <rect class="cell-hit-area" width={CELL_SIZE} height={CELL_SIZE} rx="4" />
+              </g>
+            {/each}
+          </g>
+
           <text class="credit" x="0" y="850" text-anchor="start">viu:lab Forschungsgruppe, HAW Hamburg</text>
         </svg>
       </div>
 
-      <aside class="legend" aria-label="Legende">
+      <aside class="legend" aria-label="Legende" bind:this={legendElement}>
         <strong>Zweitstimmen</strong>
         {#each allParties as party}
           <div class="legend-item"><span class="swatch" style={`background:${party.color}`}></span>{party.label}</div>

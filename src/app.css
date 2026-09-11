@@ -12,8 +12,18 @@ body { margin: 0; min-width: 320px; background: #fff; }
 main { width: min(1120px, calc(100% - 40px)); margin: 0 auto; padding: 24px 0 32px; }
 h1 { margin: 0 0 18px; font-size: clamp(22px, 3vw, 32px); line-height: 1; letter-spacing: -0.04em; }
 
-.visualization { position: relative; display: flex; align-items: flex-end; gap: 14px; overflow-x: auto; padding-top: 8px; }
-.chart-wrap { position: relative; flex: 0 0 auto; width: min(100%, 560px); height: 700px; overflow: hidden; background: #fff; }
+.visualization {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 560px) 210px;
+  gap: 16px;
+  width: min(100%, 786px);
+  overflow-x: auto;
+  padding-top: 0;
+}
+.chart-wrap { position: relative; width: min(100%, 560px); height: 700px; overflow: hidden; background: #fff; }
+.map-side-panel { display: flex; flex-direction: column; gap: 16px; padding-top: 63px; }
+.tooltip-slot { min-height: 220px; }
 svg { display: block; width: 100%; height: 100%; }
 .outline path { fill: #eee; stroke: #aaa; stroke-width: 0; }
 .cell-group { pointer-events: none; }
@@ -27,23 +37,41 @@ svg { display: block; width: 100%; height: 100%; }
 .cell-group text { fill: #fff; fill-opacity: .82; font-size: 20px; font-family: "DM Sans", sans-serif; pointer-events: none; }
 .credit { fill: #999; font-size: 14px; }
 
-.legend { position: absolute; top: 71px; left: calc(min(100%, 560px) - 160px); min-width: 150px; padding: 10px; background: #fff; border-radius: 6px; box-shadow: 0 2px 12px #2023261a; font-size: 11px; }
-.legend strong { display: block; margin-bottom: 8px; font-size: 12px; }
-.legend-item { display: flex; align-items: center; gap: 6px; white-space: nowrap; margin: 5px 0; }
+.legend {
+  position: static;
+  width: 150px;
+  min-width: 150px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #d8d4ce;
+  border-radius: 6px;
+  box-shadow: 0 2px 12px rgba(32, 35, 38, 0.12);
+  font-size: 10px;
+  color: #202326;
+  display: block;
+  opacity: 1;
+  visibility: visible;
+  z-index: 2;
+}
+.legend strong { display: block; margin-bottom: 6px; font-size: 11px; color: #202326; }
+.legend-item { display: flex; align-items: center; gap: 6px; white-space: nowrap; margin: 4px 0; color: #202326; font-weight: 500; }
 .swatch, .city-swatch { display: inline-block; flex: 0 0 auto; width: 9px; height: 9px; border-radius: 2px; }
 .city-swatch { border: 2px solid #000; }
-.legend-divider { border-top: 1px solid #ddd; margin: 9px 0 7px; }
+.legend-divider { border-top: 1px solid #d8d4ce; margin: 7px 0 5px; }
 
-.tooltip { position: fixed; z-index: 10; min-width: 170px; padding: 11px 13px; border: 1px solid #c9c4ba; border-radius: 6px; background: #fff; box-shadow: 0 5px 20px #20232626; font-size: 11px; pointer-events: none; }
-.tooltip strong { display: block; margin-bottom: 8px; font-size: 12px; }
-.tooltip-row { display: flex; align-items: center; gap: 6px; margin: 3px 0; }
-.tooltip-turnout { border-top: 1px solid #ddd; margin-top: 8px; padding-top: 8px; }
+.tooltip { width: 210px; min-width: 210px; max-width: 210px; margin-left: -60px; padding: 11px 13px; border: 1px solid #c9c4ba; border-radius: 6px; background: #fff; box-shadow: 0 5px 20px #20232626; font-size: 11px; pointer-events: none; opacity: 0; transform: translateY(8px) scale(0.98); transition: opacity 180ms ease, transform 180ms ease; }
+.tooltip.visible { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+.tooltip strong { display: block; margin-bottom: 8px; font-size: 12px; white-space: nowrap; }
+.tooltip-row { display: flex; align-items: center; gap: 6px; margin: 3px 0; white-space: nowrap; }
+.tooltip-turnout { border-top: 1px solid #ddd; margin-top: 8px; padding-top: 8px; white-space: nowrap; }
 .status { color: #68645e; }
 .error { color: #b0442f; }
 
 @media (max-width: 700px) {
   main { width: min(100% - 24px, 560px); padding-top: 12px; }
-  .visualization { display: block; overflow: visible; }
+  .visualization { display: block; width: 100%; overflow: visible; }
   .chart-wrap { width: 100%; height: auto; aspect-ratio: 4 / 5; }
-  .legend { position: static; width: max-content; margin: 14px 0 0; }
+  .map-side-panel { padding-top: 14px; gap: 14px; }
+  .tooltip, .legend { width: 100%; min-width: 0; max-width: none; }
+  .tooltip { margin-left: 0; }
 }

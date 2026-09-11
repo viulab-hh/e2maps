@@ -45,10 +45,12 @@
   const patternTilt = 0;
   const cellPadding = 3;
   let tooltip = null;
+  let tooltipVisible = false;
   let tooltipElement;
   let legendElement;
   let hoveredCellId = null;
   let lensCellId = null;
+  let hideTooltipTimeout = null;
   const zoomScale = tweened(1, { duration: 480, easing: cubicInOut });
   let loading = true;
   let error = "";
@@ -79,8 +81,17 @@
   }
 
   function showTooltip(cell, event) {
+    if (hideTooltipTimeout) {
+      clearTimeout(hideTooltipTimeout);
+      hideTooltipTimeout = null;
+    }
+
     tooltip = { cell, x: event.clientX, y: event.clientY };
-    requestAnimationFrame(positionTooltip);
+    tooltipVisible = false;
+    requestAnimationFrame(() => {
+      tooltipVisible = true;
+      requestAnimationFrame(positionTooltip);
+    });
   }
 
   function moveTooltip(event) {
@@ -91,22 +102,25 @@
   }
 
   function positionTooltip() {
-    if (!tooltip || !tooltipElement || !legendElement) return;
+    if (!tooltip || !tooltipElement) return;
     const margin = 20;
-    const legendBounds = legendElement.getBoundingClientRect();
     const { width, height } = tooltipElement.getBoundingClientRect();
-    const left = Math.max(margin, Math.min(legendBounds.left, window.innerWidth - width - margin));
-    const top = Math.max(margin, Math.min(legendBounds.top, window.innerHeight - height - margin));
+    const left = Math.max(margin, window.innerWidth - width - margin);
+    const top = margin;
     tooltipElement.style.left = `${left}px`;
     tooltipElement.style.top = `${top}px`;
   }
 
   function hideTooltip() {
-    tooltip = null;
-    hoveredCellId = null;
-    zoomScale.set(1).then(() => {
-      if (!hoveredCellId) lensCellId = null;
-    });
+    if (hideTooltipTimeout) clearTimeout(hideTooltipTimeout);
+    hideTooltipTimeout = window.setTimeout(() => {
+      tooltipVisible = false;
+      tooltip = null;
+      hoveredCellId = null;
+      zoomScale.set(1).then(() => {
+        if (!hoveredCellId) lensCellId = null;
+      });
+    }, 80);
   }
 
   function setHoveredCell(cell) {
@@ -235,24 +249,28 @@
         </svg>
       </div>
 
-      <aside class="legend" aria-label="Legende" bind:this={legendElement}>
-        <strong>Zweitstimmen</strong>
-        {#each allParties as party}
-          <div class="legend-item"><span class="swatch" style={`background:${party.color}`}></span>{party.label}</div>
-        {/each}
-        <div class="legend-divider"></div>
-        <div class="legend-item"><span class="city-swatch"></span>Großstadt-Wahlkreis</div>
-      </aside>
+      <div class="map-side-panel">
+        <div class="tooltip-slot">
+          {#if tooltip}
+            <div class="tooltip" class:visible={tooltipVisible} bind:this={tooltipElement}>
+              <strong>Wahlkreis {tooltip.cell.Name}</strong>
+              {#each partyShares(tooltip.cell) as party}
+                <div class="tooltip-row"><span class="swatch" style={`background:${party.color}`}></span>{party.label}: {(party.share * 100).toFixed(1)}%</div>
+              {/each}
+              <div class="tooltip-turnout">Wahlbeteiligung: {(turnout(tooltip.cell) * 100).toFixed(1)}%</div>
+            </div>
+          {/if}
+        </div>
+
+        <aside class="legend" aria-label="Legende" bind:this={legendElement}>
+          <strong>Zweitstimmen</strong>
+          {#each allParties as party}
+            <div class="legend-item"><span class="swatch" style={`background:${party.color}`}></span>{party.label}</div>
+          {/each}
+          <div class="legend-divider"></div>
+          <div class="legend-item"><span class="city-swatch"></span>Großstadt-Wahlkreis</div>
+        </aside>
+      </div>
     </section>
   {/if}
 </main>
-
-{#if tooltip}
-  <div class="tooltip" bind:this={tooltipElement}>
-    <strong>Wahlkreis {tooltip.cell.Name}</strong>
-    {#each partyShares(tooltip.cell) as party}
-      <div class="tooltip-row"><span class="swatch" style={`background:${party.color}`}></span>{party.label}: {(party.share * 100).toFixed(1)}%</div>
-    {/each}
-    <div class="tooltip-turnout">Wahlbeteiligung: {(turnout(tooltip.cell) * 100).toFixed(1)}%</div>
-  </div>
-{/if}

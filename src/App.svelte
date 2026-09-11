@@ -54,6 +54,7 @@
   let touchCellId = null;
   let suppressNextClick = false;
   let selectionToken = 0;
+  let isMobile = false;
   const zoomScale = tweened(1, { duration: 220, easing: cubicInOut });
   let loading = true;
   let error = "";
@@ -184,6 +185,9 @@
   }
 
   onMount(async () => {
+    const updateViewport = () => { isMobile = window.innerWidth <= 840; };
+    updateViewport();
+    window.addEventListener("resize", updateViewport);
     document.addEventListener("pointerdown", handleDocumentPointerDown);
 
     try {
@@ -226,7 +230,7 @@
   {:else}
     <section class="visualization" aria-label="Karte der Wahlkreise">
       <div class="chart-wrap">
-        <svg viewBox={`0 0 ${WIDTH} 850`} role="img" aria-label="Wahlkreiskarte Sachsen-Anhalt">
+        <svg viewBox={`0 0 ${isMobile ? 668 : WIDTH} 850`} role="img" aria-label="Wahlkreiskarte Sachsen-Anhalt">
           <g class="outline" transform="translate(0 80) scale(1.3 1.1)">
             {#each outlinePaths as outlinePath}
               <path d={outlinePath} />

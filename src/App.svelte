@@ -296,7 +296,7 @@
           </g>
 
           <a class="credit-link" href="https://viulab.haw-hamburg.de/" target="_blank" rel="noreferrer">
-            <text class="credit" x="0" y="850" text-anchor="start">viu:lab Forschungsgruppe, HAW Hamburg</text>
+            <text class="credit" x="0" y="845" text-anchor="start">viu:lab Forschungsgruppe, HAW Hamburg</text>
           </a>
         </svg>
       </div>

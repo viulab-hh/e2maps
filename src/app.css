@@ -22,8 +22,7 @@ h1 { margin: 0 0 18px; font-size: clamp(22px, 3vw, 32px); line-height: 1; letter
   padding-top: 0;
 }
 .chart-wrap { position: relative; width: min(100%, 560px); height: 700px; overflow: hidden; background: #fff; }
-.map-side-panel { display: flex; flex-direction: column; gap: 16px; padding-top: 63px; }
-.tooltip-slot { min-height: 220px; }
+.map-side-panel { position: absolute; top: 117px; left: calc(min(100%, 560px) - 139px); width: 210px; z-index: 2; }
 svg { display: block; width: 100%; height: 100%; }
 .outline path { fill: #eee; stroke: #aaa; stroke-width: 0; }
 .cell-group { pointer-events: none; }
@@ -59,7 +58,7 @@ svg { display: block; width: 100%; height: 100%; }
 .city-swatch { border: 2px solid #000; }
 .legend-divider { border-top: 1px solid #d8d4ce; margin: 7px 0 5px; }
 
-.tooltip { width: 210px; min-width: 210px; max-width: 210px; margin-left: -60px; padding: 11px 13px; border: 1px solid #c9c4ba; border-radius: 6px; background: #fff; box-shadow: 0 5px 20px #20232626; font-size: 11px; pointer-events: none; opacity: 0; transform: translateY(8px) scale(0.98); transition: opacity 180ms ease, transform 180ms ease; }
+.tooltip { width: 210px; min-width: 210px; max-width: 210px; padding: 11px 13px; border: 1px solid #c9c4ba; border-radius: 6px; background: #fff; box-shadow: 0 5px 20px #20232626; font-size: 11px; pointer-events: none; opacity: 0; transform: translateY(8px) scale(0.98); transition: opacity 180ms ease, transform 180ms ease; }
 .tooltip.visible { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
 .tooltip strong { display: block; margin-bottom: 8px; font-size: 12px; white-space: nowrap; }
 .tooltip-row { display: flex; align-items: center; gap: 6px; margin: 3px 0; white-space: nowrap; }
@@ -67,11 +66,10 @@ svg { display: block; width: 100%; height: 100%; }
 .status { color: #68645e; }
 .error { color: #b0442f; }
 
-@media (max-width: 700px) {
+@media (max-width: 840px) {
   main { width: min(100% - 24px, 560px); padding-top: 12px; }
   .visualization { display: block; width: 100%; overflow: visible; }
-  .chart-wrap { width: 100%; height: auto; aspect-ratio: 4 / 5; }
-  .map-side-panel { padding-top: 14px; gap: 14px; }
+  .chart-wrap { width: 100%; height: auto; aspect-ratio: 16 / 17; }
+  .map-side-panel { position: static; width: 100%; padding-top: 5px; }
   .tooltip, .legend { width: 100%; min-width: 0; max-width: none; }
-  .tooltip { margin-left: 0; }
 }

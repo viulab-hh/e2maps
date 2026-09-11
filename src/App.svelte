@@ -11,6 +11,7 @@
   const GRID_TOP = 90;
   const LABEL_SIZE = 20;
   const LABEL_PADDING_LEFT = 4;
+  const cellPadding = CELL_SIZE * 0.06;
 
   const layout = [
     [1, "SW", 0, 3], [2, "GK", 1, 3], [3, "HO", 0, 5], [4, "SD", 1, 4],
@@ -43,7 +44,6 @@
   let cells = [];
   let outlinePaths = [];
   const patternTilt = 0;
-  const cellPadding = 3;
   let tooltip = null;
   let tooltipVisible = false;
   let tooltipElement;
@@ -102,13 +102,7 @@
   }
 
   function positionTooltip() {
-    if (!tooltip || !tooltipElement) return;
-    const margin = 20;
-    const { width, height } = tooltipElement.getBoundingClientRect();
-    const left = Math.max(margin, window.innerWidth - width - margin);
-    const top = margin;
-    tooltipElement.style.left = `${left}px`;
-    tooltipElement.style.top = `${top}px`;
+    // The tooltip is positioned by the responsive side panel.
   }
 
   function hideTooltip() {
@@ -127,6 +121,16 @@
     hoveredCellId = cell.id;
     lensCellId = cell.id;
     zoomScale.set(1.72);
+  }
+
+  function toggleCell(cell, event) {
+    if (hoveredCellId === cell.id) {
+      hideTooltip();
+      return;
+    }
+
+    setHoveredCell(cell);
+    showTooltip(cell, event);
   }
 
   function cellTransform(cell, activeCellId, magnification) {
@@ -184,7 +188,7 @@
   {:else}
     <section class="visualization" aria-label="Karte der Wahlkreise">
       <div class="chart-wrap">
-        <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} role="img" aria-label="Wahlkreiskarte Sachsen-Anhalt">
+        <svg viewBox={`0 0 ${WIDTH} 850`} role="img" aria-label="Wahlkreiskarte Sachsen-Anhalt">
           <g class="outline" transform="translate(0 80) scale(1.3 1.1)">
             {#each outlinePaths as outlinePath}
               <path d={outlinePath} />
@@ -233,12 +237,15 @@
             {#each cells as cell}
               <g
                 class="cell-hit-group"
-                role="img"
+                role="button"
+                tabindex="0"
                 aria-label={`Wahlkreis ${cell.Name}`}
                 transform={`translate(${cell.col * (CELL_SIZE + cellPadding)} ${GRID_TOP + cell.row * (CELL_SIZE + cellPadding)})`}
                 on:mouseenter={(event) => { setHoveredCell(cell); showTooltip(cell, event); }}
                 on:mousemove={moveTooltip}
                 on:mouseleave={hideTooltip}
+                on:click={(event) => toggleCell(cell, event)}
+                on:keydown={(event) => { if (event.key === "Enter" || event.key === " ") toggleCell(cell, event); }}
               >
                 <rect class="cell-hit-area" width={CELL_SIZE} height={CELL_SIZE} rx="4" />
               </g>
@@ -250,26 +257,24 @@
       </div>
 
       <div class="map-side-panel">
-        <div class="tooltip-slot">
-          {#if tooltip}
-            <div class="tooltip" class:visible={tooltipVisible} bind:this={tooltipElement}>
-              <strong>Wahlkreis {tooltip.cell.Name}</strong>
-              {#each partyShares(tooltip.cell) as party}
-                <div class="tooltip-row"><span class="swatch" style={`background:${party.color}`}></span>{party.label}: {(party.share * 100).toFixed(1)}%</div>
-              {/each}
-              <div class="tooltip-turnout">Wahlbeteiligung: {(turnout(tooltip.cell) * 100).toFixed(1)}%</div>
-            </div>
-          {/if}
-        </div>
-
-        <aside class="legend" aria-label="Legende" bind:this={legendElement}>
-          <strong>Zweitstimmen</strong>
-          {#each allParties as party}
-            <div class="legend-item"><span class="swatch" style={`background:${party.color}`}></span>{party.label}</div>
-          {/each}
-          <div class="legend-divider"></div>
-          <div class="legend-item"><span class="city-swatch"></span>Großstadt-Wahlkreis</div>
-        </aside>
+        {#if tooltip}
+          <div class="tooltip" class:visible={tooltipVisible} bind:this={tooltipElement}>
+            <strong>Wahlkreis {tooltip.cell.Name}</strong>
+            {#each partyShares(tooltip.cell) as party}
+              <div class="tooltip-row"><span class="swatch" style={`background:${party.color}`}></span>{party.label}: {(party.share * 100).toFixed(1)}%</div>
+            {/each}
+            <div class="tooltip-turnout">Wahlbeteiligung: {(turnout(tooltip.cell) * 100).toFixed(1)}%</div>
+          </div>
+        {:else}
+          <aside class="legend" aria-label="Legende" bind:this={legendElement}>
+            <strong>Zweitstimmen</strong>
+            {#each allParties as party}
+              <div class="legend-item"><span class="swatch" style={`background:${party.color}`}></span>{party.label}</div>
+            {/each}
+            <div class="legend-divider"></div>
+            <div class="legend-item"><span class="city-swatch"></span>Großstadt-Wahlkreis</div>
+          </aside>
+        {/if}
       </div>
     </section>
   {/if}

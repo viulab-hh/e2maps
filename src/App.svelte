@@ -51,6 +51,8 @@
   let hoveredCellId = null;
   let lensCellId = null;
   let hideTooltipTimeout = null;
+  let touchCellId = null;
+  let suppressNextClick = false;
   const zoomScale = tweened(1, { duration: 480, easing: cubicInOut });
   let loading = true;
   let error = "";
@@ -129,6 +131,20 @@
       return;
     }
 
+    setHoveredCell(cell);
+    showTooltip(cell, event);
+  }
+
+  function handleTouchCell(cell, event) {
+    suppressNextClick = true;
+
+    if (touchCellId === cell.id) {
+      hideTooltip();
+      touchCellId = null;
+      return;
+    }
+
+    touchCellId = cell.id;
     setHoveredCell(cell);
     showTooltip(cell, event);
   }
@@ -244,7 +260,8 @@
                 on:mouseenter={(event) => { setHoveredCell(cell); showTooltip(cell, event); }}
                 on:mousemove={moveTooltip}
                 on:mouseleave={hideTooltip}
-                on:click={(event) => toggleCell(cell, event)}
+                on:touchstart={(event) => handleTouchCell(cell, event)}
+                on:click={(event) => { if (suppressNextClick) suppressNextClick = false; else toggleCell(cell, event); }}
                 on:keydown={(event) => { if (event.key === "Enter" || event.key === " ") toggleCell(cell, event); }}
               >
                 <rect class="cell-hit-area" width={CELL_SIZE} height={CELL_SIZE} rx="4" />

@@ -134,8 +134,8 @@
   onMount(async () => {
     try {
       const [csvResponse, outlineResponse] = await Promise.all([
-        fetch("/files/c0885d8053ee3a5eaf42b31bce761e4de5373c52b3f677a756481e0414da376a614ca96124e6049fcb3d28dbf9796f8bbcc2fff0d371fc4096a0c39d01e80312.csv"),
-        fetch("/files/0267b6c66251eaf710bff60bb095e2ad690896ef271ad8ebfa79fc6ab2afef2f1d3edd3ca81ad398cce5e9e817b9652eb6adf228dd2f276b58bb53ba3d8ba6b3.geojson")
+        fetch(`${import.meta.env.BASE_URL}files/c0885d8053ee3a5eaf42b31bce761e4de5373c52b3f677a756481e0414da376a614ca96124e6049fcb3d28dbf9796f8bbcc2fff0d371fc4096a0c39d01e80312.csv`),
+        fetch(`${import.meta.env.BASE_URL}files/0267b6c66251eaf710bff60bb095e2ad690896ef271ad8ebfa79fc6ab2afef2f1d3edd3ca81ad398cce5e9e817b9652eb6adf228dd2f276b58bb53ba3d8ba6b3.geojson`)
       ]);
 
       if (!csvResponse.ok || !outlineResponse.ok) throw new Error("Die Wahldaten konnten nicht geladen werden.");

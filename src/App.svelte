@@ -53,7 +53,8 @@
   let hideTooltipTimeout = null;
   let touchCellId = null;
   let suppressNextClick = false;
-  const zoomScale = tweened(1, { duration: 480, easing: cubicInOut });
+  let selectionToken = 0;
+  const zoomScale = tweened(1, { duration: 220, easing: cubicInOut });
   let loading = true;
   let error = "";
 
@@ -145,8 +146,25 @@
     }
 
     touchCellId = cell.id;
-    setHoveredCell(cell);
-    showTooltip(cell, event);
+    const token = ++selectionToken;
+    tooltipVisible = false;
+    tooltip = null;
+    hoveredCellId = null;
+    lensCellId = null;
+    zoomScale.set(1).then(() => {
+      if (selectionToken !== token || touchCellId !== cell.id) return;
+      setHoveredCell(cell);
+      showTooltip(cell, event);
+    });
+  }
+
+  function handleDocumentPointerDown(event) {
+    if (event.target.closest?.(".cell-hit-group")) return;
+    if (hoveredCellId || touchCellId) {
+      touchCellId = null;
+      selectionToken += 1;
+      hideTooltip();
+    }
   }
 
   function cellTransform(cell, activeCellId, magnification) {
@@ -166,6 +184,8 @@
   }
 
   onMount(async () => {
+    document.addEventListener("pointerdown", handleDocumentPointerDown);
+
     try {
       const [csvResponse, outlineResponse] = await Promise.all([
         fetch(`${import.meta.env.BASE_URL}files/c0885d8053ee3a5eaf42b31bce761e4de5373c52b3f677a756481e0414da376a614ca96124e6049fcb3d28dbf9796f8bbcc2fff0d371fc4096a0c39d01e80312.csv`),
@@ -187,6 +207,8 @@
     } finally {
       loading = false;
     }
+
+    return () => document.removeEventListener("pointerdown", handleDocumentPointerDown);
   });
 </script>
 
